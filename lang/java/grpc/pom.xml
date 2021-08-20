@@ -24,7 +24,7 @@
     <groupId>org.apache.avro</groupId>
     <artifactId>avro-parent</artifactId>
     <version>1.11.0-SNAPSHOT</version>
-    <relativePath>../</relativePath>
+    <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>avro-grpc</artifactId>
@@ -80,27 +80,6 @@
                   </includes>
                 </bannedDependencies>
               </rules>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>avro-maven-plugin</artifactId>
-        <version>${project.version}</version>
-        <executions>
-          <execution>
-            <id>schemas</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>schema</goal>
-              <goal>protocol</goal>
-              <goal>idl-protocol</goal>
-            </goals>
-            <configuration>
-              <stringType>String</stringType>
-              <testSourceDirectory>${project.basedir}/src/test/avro</testSourceDirectory>
-              <testOutputDirectory>${project.build.directory}/generated-test-sources/java</testOutputDirectory>
             </configuration>
           </execution>
         </executions>
