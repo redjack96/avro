@@ -35,7 +35,6 @@
 
   <properties>
     <main.basedir>${project.parent.basedir}</main.basedir>
-
     <!-- version properties for dependencies -->
     <hadoop.version>3.3.1</hadoop.version>
     <jackson.version>2.12.4</jackson.version>
