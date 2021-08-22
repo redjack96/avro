@@ -45,6 +45,7 @@
       org.apache.avro.mapred*;version="${project.version}",
       org.apache.avro.hadoop*;version="${project.version}",
     </osgi.export>
+    <sonar.coverage.jacoco.xmlReportPaths>${basedir}/../${aggregate.report.dir}</sonar.coverage.jacoco.xmlReportPaths>
   </properties>
 
   <build>

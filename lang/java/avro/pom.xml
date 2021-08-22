@@ -44,7 +44,9 @@
       *
     </osgi.import>
     <osgi.export>org.apache.avro*;version="${project.version}"</osgi.export>
-    <sonar.coverage.jacoco.xmlReportPaths>${basedir}/../../../${aggregate.report.dir}</sonar.coverage.jacoco.xmlReportPaths>
+    <sonar.coverage.jacoco.xmlReportPaths>${basedir}/../${aggregate.report.dir}</sonar.coverage.jacoco.xmlReportPaths>
+    <pitest.version>1.5.2</pitest.version>
+
   </properties>
 
   <build>
@@ -57,6 +59,11 @@
       </resource>
     </resources>
     <plugins>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${jacoco-maven-plugin.version}</version>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
@@ -71,38 +78,79 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>${surefire.version}</version>
         <configuration>
+          <forkCount>1</forkCount>
+          <reuseForks>false</reuseForks>
           <parallel>none</parallel>
         </configuration>
+      </plugin>
+      <!-- Aggiunto Pitest per il mutation testing -->
+      <plugin>
+        <groupId>org.pitest</groupId>
+        <artifactId>pitest-maven</artifactId>
+        <version>${pitest.version}</version>
         <executions>
           <execution>
-            <id>test-with-custom-coders</id>
+            <id>pit-report</id>
             <phase>test</phase>
             <goals>
-              <goal>test</goal>
+              <goal>mutationCoverage</goal>
             </goals>
-            <configuration>
-              <systemPropertyVariables>
-                <org.apache.avro.specific.use_custom_coders>true</org.apache.avro.specific.use_custom_coders>
-              </systemPropertyVariables>
-            </configuration>
-          </execution>
-          <execution>
-            <id>test-with-fast-reader</id>
-            <phase>test</phase>
-            <goals>
-              <goal>test</goal>
-            </goals>
-            <configuration>
-              <systemPropertyVariables>
-                <org.apache.avro.fastread>true</org.apache.avro.fastread>
-              </systemPropertyVariables>
-            </configuration>
           </execution>
         </executions>
+
+        <configuration>
+          <timeoutFactor>1000</timeoutFactor>
+          <targetClasses>
+            <param>org.apache.avro.generic.GenericData</param>
+            <param>org.apache.avro.reflect.ReflectData</param>
+          </targetClasses>
+          <targetTests>
+            <param>org.apache.avro.generic.TestGenericData</param>
+            <param>org.apache.avro.reflect.TestReflectData</param>
+          </targetTests>
+        </configuration>
       </plugin>
+      <!-- <plugin>
+         <groupId>org.apache.maven.plugins</groupId>
+         <artifactId>maven-surefire-plugin</artifactId>
+         <configuration>
+           &lt;!&ndash; some tests hang if not run in a separate JVM &ndash;&gt;
+           <forkCount>1</forkCount>
+           <reuseForks>false</reuseForks>
+           <parallel>none</parallel>
+         </configuration>
+         <executions>
+           <execution>
+             <id>test-with-custom-coders</id>
+             <phase>test</phase>
+             <goals>
+               <goal>test</goal>
+             </goals>
+             <configuration>
+               <systemPropertyVariables>
+                 <org.apache.avro.specific.use_custom_coders>true</org.apache.avro.specific.use_custom_coders>
+               </systemPropertyVariables>
+             </configuration>
+           </execution>
+           <execution>
+             <id>test-with-fast-reader</id>
+             <phase>test</phase>
+             <goals>
+               <goal>test</goal>
+             </goals>
+             <configuration>
+               <systemPropertyVariables>
+                 <org.apache.avro.fastread>true</org.apache.avro.fastread>
+               </systemPropertyVariables>
+             </configuration>
+           </execution>
+         </executions>
+       </plugin>-->
     </plugins>
   </build>
+
 
   <profiles>
     <profile>
@@ -129,7 +177,9 @@
                     <argument>100</argument>
                   </arguments>
                 </configuration>
-                <goals><goal>java</goal></goals>
+                <goals>
+                  <goal>java</goal>
+                </goals>
               </execution>
 
               <!-- Generate random data for interop tests, using deflate codec -->
@@ -145,7 +195,9 @@
                     <argument>deflate</argument>
                   </arguments>
                 </configuration>
-                <goals><goal>java</goal></goals>
+                <goals>
+                  <goal>java</goal>
+                </goals>
               </execution>
 
               <!-- Generate random data for interop tests, using snappy codec -->
@@ -161,7 +213,9 @@
                     <argument>snappy</argument>
                   </arguments>
                 </configuration>
-                <goals><goal>java</goal></goals>
+                <goals>
+                  <goal>java</goal>
+                </goals>
               </execution>
 
               <!-- Generate random data for interop tests, using bzip2 codec -->
@@ -177,7 +231,9 @@
                     <argument>bzip2</argument>
                   </arguments>
                 </configuration>
-                <goals><goal>java</goal></goals>
+                <goals>
+                  <goal>java</goal>
+                </goals>
               </execution>
 
               <!-- Generate random data for interop tests, using xz codec -->
@@ -193,7 +249,9 @@
                     <argument>xz</argument>
                   </arguments>
                 </configuration>
-                <goals><goal>java</goal></goals>
+                <goals>
+                  <goal>java</goal>
+                </goals>
               </execution>
 
               <!-- Generate random data for interop tests, using zstandard codec -->
@@ -209,7 +267,9 @@
                     <argument>zstandard</argument>
                   </arguments>
                 </configuration>
-                <goals><goal>java</goal></goals>
+                <goals>
+                  <goal>java</goal>
+                </goals>
               </execution>
             </executions>
           </plugin>

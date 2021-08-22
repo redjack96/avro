@@ -42,6 +42,7 @@
       *
     </osgi.import>
     <osgi.export>org.apache.avro.protobuf*;version="${project.version}"</osgi.export>
+    <sonar.coverage.jacoco.xmlReportPaths>${basedir}/../${aggregate.report.dir}</sonar.coverage.jacoco.xmlReportPaths>
   </properties>
 
   <profiles>

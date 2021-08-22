@@ -64,6 +64,7 @@
     <exec-plugin.version>3.0.0</exec-plugin.version>
     <file-management.version>3.0.0</file-management.version>
     <javacc-plugin.version>2.6</javacc-plugin.version>
+    <aggregate.report.dir>test-isw2/target/site/jacoco-aggregate/jacoco.xml</aggregate.report.dir>
   </properties>
 
   <modules>
@@ -81,6 +82,7 @@
     <module>archetypes</module>
     <module>grpc</module>
     <module>perf</module>
+    <module>test-isw2</module>
   </modules>
 
   <build>
@@ -221,6 +223,28 @@
           <artifactId>spotless-maven-plugin</artifactId>
           <version>${spotless-maven-plugin.version}</version>
         </plugin>
+        <plugin>
+          <groupId>org.sonarsource.scanner.maven</groupId>
+          <artifactId>sonar-maven-plugin</artifactId>
+          <version>3.7.0.1746</version>
+        </plugin>
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>${jacoco-maven-plugin.version}</version>
+          <executions>
+            <execution>
+              <id>parentPrepareAgent</id>
+              <phase>initialize</phase>
+              <goals>
+                <goal>prepare-agent</goal>
+              </goals>
+              <!--<configuration>
+                <destFile>${main.basedir}/lang/java/avro/target/jacoco.exec</destFile>
+              </configuration>-->
+            </execution>
+          </executions>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -314,6 +338,51 @@
   </reporting>
 
   <profiles>
+    <!-- Profilo per la code coverage di JaCoCo. E' chiamato dal file .github/workflows/build.yml-->
+    <profile>
+      <id>code-coverage</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>${surefire.version}</version>
+            <configuration>
+              <!-- some tests hang if not run in a separate JVM -->
+              <forkCount>1</forkCount>
+              <reuseForks>false</reuseForks>
+              <parallel>none</parallel>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>${jacoco-maven-plugin.version}</version>
+            <executions>
+              <!-- Permette di collegare il JavaAgent alla VM per instrumentare il codice on-the-fly.
+                   Il report viene eseguito nel modulo test-isw2 -->
+              <execution>
+                <id>code-coverage-prepare-agent</id>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+                <!--<configuration>
+                  <destFile>${main.basedir}/lang/java/avro/target/jacoco.exec</destFile>
+                </configuration>-->
+              </execution>
+              <!-- Nell' esempio non c'è ma su bookkeeper l' ho fatto funzionare con questo... -->
+              <execution>
+                <id>profile-report-aggregate</id>
+                <phase>prepare-package</phase>
+                <goals>
+                  <goal>report-aggregate</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
     <profile>
       <id>m2e</id>
       <activation>

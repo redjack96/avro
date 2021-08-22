@@ -36,6 +36,7 @@
   <properties>
     <main.basedir>${project.parent.parent.basedir}</main.basedir>
     <pluginTestingVersion>3.3.0</pluginTestingVersion>
+    <sonar.coverage.jacoco.xmlReportPaths>${basedir}/../${aggregate.report.dir}</sonar.coverage.jacoco.xmlReportPaths>
   </properties>
 
   <build>

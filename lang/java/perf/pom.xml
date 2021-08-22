@@ -36,6 +36,7 @@
   <properties>
     <jmh.version>1.33</jmh.version>
     <main.basedir>${project.parent.parent.basedir}</main.basedir>
+    <sonar.coverage.jacoco.xmlReportPaths>${basedir}/../${aggregate.report.dir}</sonar.coverage.jacoco.xmlReportPaths>
   </properties>
 
   <build>
