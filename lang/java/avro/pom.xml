@@ -60,11 +60,6 @@
     </resources>
     <plugins>
       <plugin>
-        <groupId>org.jacoco</groupId>
-        <artifactId>jacoco-maven-plugin</artifactId>
-        <version>${jacoco-maven-plugin.version}</version>
-      </plugin>
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
@@ -75,16 +70,45 @@
           </archive>
         </configuration>
       </plugin>
-      <plugin>
+      <!--<plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${jacoco-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>prep-agent-by-avro</id>
+            <phase>test-compile</phase>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+            <configuration>
+              <destFile>${build.directory}/jacoco.exec</destFile>
+            </configuration>
+          </execution>
+          <execution>
+            <id>report-from-avro</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>-->
+      <!--<plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire.version}</version>
+        <executions>
+          <execution>
+            <phase>test</phase>
+          </execution>
+        </executions>
         <configuration>
           <forkCount>1</forkCount>
           <reuseForks>false</reuseForks>
           <parallel>none</parallel>
         </configuration>
-      </plugin>
+      </plugin>-->
       <!-- Aggiunto Pitest per il mutation testing -->
       <plugin>
         <groupId>org.pitest</groupId>
