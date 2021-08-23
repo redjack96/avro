@@ -219,30 +219,16 @@
           <artifactId>exec-maven-plugin</artifactId>
           <version>${exec-plugin.version}</version>
         </plugin>
-        <plugin>
+        <!--<plugin>
           <groupId>com.diffplug.spotless</groupId>
           <artifactId>spotless-maven-plugin</artifactId>
           <version>${spotless-maven-plugin.version}</version>
-        </plugin>
+        </plugin>-->
         <plugin>
           <groupId>org.sonarsource.scanner.maven</groupId>
           <artifactId>sonar-maven-plugin</artifactId>
           <version>3.7.0.1746</version>
         </plugin>
-        <!--<plugin>
-          <groupId>org.jacoco</groupId>
-          <artifactId>jacoco-maven-plugin</artifactId>
-          <version>${jacoco-maven-plugin.version}</version>
-          <executions>
-            <execution>
-              <id>parentPrepareAgent</id>
-              <phase>initialize</phase>
-              <goals>
-                <goal>prepare-agent</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin>-->
       </plugins>
     </pluginManagement>
     <plugins>
@@ -278,7 +264,7 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
+      <!--<plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
         <configuration>
@@ -286,9 +272,9 @@
           <configLocation>checkstyle.xml</configLocation>
           <suppressionsLocation>suppressions.xml</suppressionsLocation>
         </configuration>
-        <!-- Runs by default in the verify phase  (mvn verify or later in the build cycle)
+        &lt;!&ndash; Runs by default in the verify phase  (mvn verify or later in the build cycle)
              the 'check' goal will fail the build if it does not pass.  "mvn checkstyle:check"
-             will do this alone, or "mvn checkstyle:checkstyle" will report but not break  -->
+             will do this alone, or "mvn checkstyle:checkstyle" will report but not break  &ndash;&gt;
         <executions>
           <execution>
             <id>checkstyle-check</id>
@@ -305,8 +291,8 @@
         <configuration>
           <java>
             <eclipse>
-              <!-- Avro uses Sun's java code style conventions with 2 spaces, this is a modified version of
-                   the eclipse formatter -->
+              &lt;!&ndash; Avro uses Sun's java code style conventions with 2 spaces, this is a modified version of
+                   the eclipse formatter &ndash;&gt;
               <file>${main.basedir}/lang/java/eclipse-java-formatter.xml</file>
               <version>4.19.0</version>
             </eclipse>
@@ -320,7 +306,7 @@
         </configuration>
         <executions>
           <execution>
-            <!-- Runs in compile phase to fail fast in case of formatting issues.-->
+            &lt;!&ndash; Runs in compile phase to fail fast in case of formatting issues.&ndash;&gt;
             <id>spotless-check</id>
             <phase>compile</phase>
             <goals>
@@ -328,7 +314,7 @@
             </goals>
           </execution>
         </executions>
-      </plugin>
+      </plugin>-->
     </plugins>
   </build>
 

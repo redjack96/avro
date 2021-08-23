@@ -70,74 +70,44 @@
           </archive>
         </configuration>
       </plugin>
-      <!-- Aggiunto Pitest per il mutation testing -->
-      <plugin>
-        <groupId>org.pitest</groupId>
-        <artifactId>pitest-maven</artifactId>
-        <version>${pitest.version}</version>
-        <executions>
-          <execution>
-            <id>pit-report</id>
-            <phase>test</phase>
-            <goals>
-              <goal>mutationCoverage</goal>
-            </goals>
-          </execution>
-        </executions>
-
-        <configuration>
-          <timeoutFactor>1000</timeoutFactor>
-          <targetClasses>
-            <param>org.apache.avro.generic.GenericData</param>
-            <param>org.apache.avro.reflect.ReflectData</param>
-          </targetClasses>
-          <targetTests>
-            <param>org.apache.avro.generic.TestGenericData</param>
-            <param>org.apache.avro.reflect.TestReflectData</param>
-          </targetTests>
-        </configuration>
-      </plugin>
-      <!-- <plugin>
-         <groupId>org.apache.maven.plugins</groupId>
-         <artifactId>maven-surefire-plugin</artifactId>
-         <configuration>
-           &lt;!&ndash; some tests hang if not run in a separate JVM &ndash;&gt;
-           <forkCount>1</forkCount>
-           <reuseForks>false</reuseForks>
-           <parallel>none</parallel>
-         </configuration>
-         <executions>
-           <execution>
-             <id>test-with-custom-coders</id>
-             <phase>test</phase>
-             <goals>
-               <goal>test</goal>
-             </goals>
-             <configuration>
-               <systemPropertyVariables>
-                 <org.apache.avro.specific.use_custom_coders>true</org.apache.avro.specific.use_custom_coders>
-               </systemPropertyVariables>
-             </configuration>
-           </execution>
-           <execution>
-             <id>test-with-fast-reader</id>
-             <phase>test</phase>
-             <goals>
-               <goal>test</goal>
-             </goals>
-             <configuration>
-               <systemPropertyVariables>
-                 <org.apache.avro.fastread>true</org.apache.avro.fastread>
-               </systemPropertyVariables>
-             </configuration>
-           </execution>
-         </executions>
-       </plugin>-->
     </plugins>
   </build>
 
 
   <profiles>
+    <profile>
+      <id>pitest</id>
+      <!-- Aggiunto Pitest per il mutation testing -->
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.pitest</groupId>
+            <artifactId>pitest-maven</artifactId>
+            <version>${pitest.version}</version>
+            <executions>
+              <execution>
+                <id>pit-report</id>
+                <phase>test</phase>
+                <goals>
+                  <goal>mutationCoverage</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <timeoutFactor>1000</timeoutFactor>
+              <targetClasses>
+                <param>org.apache.avro.generic.GenericData</param>
+                <param>org.apache.avro.reflect.ReflectData</param>
+              </targetClasses>
+              <targetTests>
+                <param>org.apache.avro.generic.Test*</param>
+                <param>org.apache.avro.reflect.Test*</param>
+              </targetTests>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
     <profile>
       <id>interop-data-generate</id>
       <activation>

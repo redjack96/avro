@@ -17,12 +17,12 @@
  */
 package org.apache.avro.generic;
 
-import org.apache.avro.Conversion;
-import org.apache.avro.Conversions;
+import org.apache.avro.Schema;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Per eseguire i test, usa i comandi seguenti perché molte classi hanno bisogno
@@ -37,78 +37,32 @@ public class TestGenericData {
     genericData = new GenericData();
   }
 
-  @Test
-  public void addLogicalTypeConversion() {
-    genericData.addLogicalTypeConversion(new Conversions.DecimalConversion());
-  }
-
-  @Test
-  public void getConversionByClass() {
-    Conversion<?> conversionByClass = genericData.getConversionByClass(Integer.class);
-    assertNull(conversionByClass);
-  }
-
-  @Test
-  public void genericGetConversionByClass() {
-  }
-
-  @Test
-  public void getConversionFor() {
-  }
-
-  @Test
-  public void setFastReaderEnabled() {
-  }
-
-  @Test
-  public void isFastReaderEnabled() {
-  }
-
-  @Test
-  public void getFastReaderBuilder() {
-  }
-
-  @Test
-  public void createDatumReader() {
-  }
-
-  @Test
-  public void createDatumWriter() {
-  }
-
-  // Questo sembra un buon test.
+  /**
+   * mvn test -Dtest=TestGenericData.validate -pl lang/java/avro
+   */
   @Test
   public void validate() {
+    Schema s = Schema.create(Schema.Type.STRING); // Array non è valido
+    assertFalse(genericData.validate(s, new Integer[] { 0, 5, 3 }));
+    assertTrue(genericData.validate(s, "new Integer[] { 0, 5, 3 }"));
+    System.out.println("Ho validato lo schema");
   }
 
-  // ANche questo sembra buono, ma cosa fa???
-
+  /**
+   * Anche questo sembra buono, ma cosa fa???
+   */
   @Test
   public void induce() {
   }
 
   // Sembra buono
-
   @Test
   public void resolveUnion() {
   }
 
   // Decente
   @Test
-  public void getDefaultValue() {
-  }
-
-  // Decente
-  @Test
   public void deepCopy() {
-  }
-
-  @Test
-  public void newRecord() {
-  }
-
-  @Test
-  public void createString() {
   }
 
   @Test
