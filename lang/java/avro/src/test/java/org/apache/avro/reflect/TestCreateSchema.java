@@ -17,7 +17,9 @@
  */
 package org.apache.avro.reflect;
 
+import org.apache.avro.AvroRuntimeException;
 import org.apache.avro.Schema;
+import org.apache.avro.testutil.TrialRecord;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -25,12 +27,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 /**
  * Test parametrico del metodo GenericData::deepCopy(). Il test riceve due parametri,
@@ -50,12 +50,12 @@ public class TestCreateSchema {
 
   private final Type type;
   private final Map<String, Schema> mapStringSchema;
-  private final Schema expectedSchema;
+  private final Object expectedSchemaOrThrow;
 
-  public TestCreateSchema(Class<?> type, Map<String, Schema> mapStringSchema, Schema expectedSchema) {
+  public TestCreateSchema(Class<?> type, Map<String, Schema> mapStringSchema, Object expectedSchemaOrThrow) {
     this.type = type;
     this.mapStringSchema = mapStringSchema;
-    this.expectedSchema = expectedSchema;
+    this.expectedSchemaOrThrow = expectedSchemaOrThrow;
   }
 
   @BeforeClass
@@ -68,18 +68,33 @@ public class TestCreateSchema {
     reflectData = null;
   }
 
-  @Parameterized.Parameters
+  @Parameterized.Parameters(name = "test create-schema n° {index}")
   public static Collection<Object[]> data() {
     return configure();
   }
 
   private static Collection<Object[]> configure() {
     return Arrays.asList(new Object[][]{
+      // tipo compatibile con schema, map nullo
       {Integer.class, null, Schema.create(Schema.Type.INT)},
-      // {null, initializeMap(Schema.Type.INT), Schema.create(Schema.Type.INT)}, // non funziona
-      {Void.class, new HashMap<>(), Schema.create(Schema.Type.NULL)},
+      // tipo compatibile con schema, map vuoto
+      {Integer.class, new HashMap<>(), Schema.create(Schema.Type.INT)},
+      // tipo compatibile con schema, map non vuoto
       {String.class, initializeMap(Schema.Type.STRING), Schema.create(Schema.Type.STRING)},
-
+      // tipo compatibile con schema, map con schema nullo.
+      {String.class, initializeNoSchemaMap(Schema.Type.STRING), Schema.create(Schema.Type.STRING)},
+      // tipo NON compatibile con schema, map nullo
+      {ArrayList.class, null, new AvroRuntimeException("errore arrayList")},
+      // tipo NON compatibile con schema, map vuoto
+      {ArrayList.class, new HashMap<>(), new AvroRuntimeException("errore arrayList map vuoto")},
+      // tipo NON compatibile con schema, map pieno
+      {LinkedList.class, initializeMap(Schema.Type.NULL), new AvroRuntimeException("errore arrayList map pieno")},
+      {String.class, initializeMap(Schema.Type.INT), Schema.create(Schema.Type.STRING)},
+      // tipo NON compatibile con schema, map pieno ma con schema nullo
+      {LinkedList.class, initializeNoSchemaMap(Schema.Type.NULL), new AvroRuntimeException("errore arrayList map pieno senza schema")},
+      {String.class, initializeNoSchemaMap(Schema.Type.INT), Schema.create(Schema.Type.STRING)},
+      // record
+      {TrialRecord.class, TrialRecord.getMap(), TrialRecord.getSchemaStatic()}
     });
   }
 
@@ -89,12 +104,22 @@ public class TestCreateSchema {
    */
   @Test
   public void createSchema() {
-    assertEquals(this.expectedSchema, reflectData.createSchema(this.type, this.mapStringSchema));
+    if (this.expectedSchemaOrThrow instanceof Schema) {
+      assertEquals(this.expectedSchemaOrThrow, reflectData.createSchema(this.type, this.mapStringSchema));
+    } else {
+      assertThrows(AvroRuntimeException.class, () -> reflectData.createSchema(this.type, this.mapStringSchema));
+    }
   }
 
   private static Map<String, Schema> initializeMap(Schema.Type type) {
     Map<String, Schema> map = new HashMap<>();
     map.put("Schema-" + type.getName(), Schema.create(type));
+    return map;
+  }
+
+  private static Map<String, Schema> initializeNoSchemaMap(Schema.Type type) {
+    Map<String, Schema> map = new HashMap<>();
+    map.put("Schema-" + type.getName(), null);
     return map;
   }
 }

@@ -3,9 +3,7 @@ package org.apache.avro.testutil;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.IndexedRecord;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Implemento una semplice classe serializzabile per Avro
@@ -24,10 +22,7 @@ public class TrialRecord implements IndexedRecord {
    */
   @Override
   public Schema getSchema() {
-    List<Schema.Field> schemaFields = new ArrayList<>();
-    schemaFields.add(new Schema.Field("first", Schema.create(Schema.Type.INT)));
-    schemaFields.add(new Schema.Field("second", Schema.create(Schema.Type.STRING)));
-    return Schema.createRecord("TrialRecord", "", "", false, schemaFields);
+    return getSchemaStatic();
   }
 
   @Override
@@ -58,5 +53,18 @@ public class TrialRecord implements IndexedRecord {
   @Override
   public int hashCode() {
     return Objects.hash(first, second);
+  }
+
+  public static Map<String, Schema> getMap(){
+    Map<String, Schema> a = new HashMap<>();
+    a.put(TrialRecord.class.getName(), getSchemaStatic());
+    return a;
+  }
+
+  public static Schema getSchemaStatic(){
+    List<Schema.Field> schemaFields = new ArrayList<>();
+    schemaFields.add(new Schema.Field("first", Schema.create(Schema.Type.INT)));
+    schemaFields.add(new Schema.Field("second", Schema.create(Schema.Type.STRING)));
+    return Schema.createRecord("TrialRecord", "", "", false, schemaFields);
   }
 }
