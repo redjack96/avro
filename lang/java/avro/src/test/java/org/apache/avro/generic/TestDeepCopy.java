@@ -18,16 +18,16 @@
 package org.apache.avro.generic;
 
 import org.apache.avro.Schema;
+import org.apache.avro.testutil.TrialRecord;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
@@ -48,13 +48,15 @@ public class TestDeepCopy {
 
   private static GenericData genericData;
   private static HashMap<String, List<Double>> deepMap;
-
-  private final Object value; // è sia il valore dato in input, sia il valore atteso.
+  private static final Logger LOG = LoggerFactory.getLogger(TestDeepCopy.class);
+  private final Object value; // spesso è sia il valore dato in input, sia il valore atteso.
   private final Schema schema;
+  private final Object expectedCopy;
 
-  public TestDeepCopy(Object value, Schema schema) {
+  public TestDeepCopy(Object value, Schema schema, Object expectedCopy) {
     this.value = value;
     this.schema = schema;
+    this.expectedCopy = expectedCopy;
   }
 
   @BeforeClass
@@ -77,21 +79,31 @@ public class TestDeepCopy {
   }
 
   private static Collection<Object[]> configure(){
-    return Arrays.asList(new Object[][]{
-      {null, Schema.create(Schema.Type.DOUBLE)}, // oggetto nullo, schema NON compatibile. Deve funzionare lo stesso
-      {null, Schema.create(Schema.Type.NULL)}, // oggetto nullo, schema compatibile.
-      {10, Schema.create(Schema.Type.FLOAT)}, // oggetto semplice, schema NON compatibile. Deve dare errore
-      {"String", Schema.create(Schema.Type.STRING)}, // oggetto semplice, schema compatibile
+    TrialRecord due = new TrialRecord(2, "due");
+    Schema trialRecordSchema = due.getSchema();
+    Object record = GenericData.get().newRecord(due, trialRecordSchema);
+    Object recordCopy = GenericData.get().newRecord(due, trialRecordSchema);
 
-      // oggetti composti
-      {Arrays.asList(0.0, 5.0, 3.0), Schema.createArray(Schema.create(Schema.Type.INT))}, // oggetto composto, schema NON compatibile. Nonostante ciò è possibile copiarlo.
-      {Arrays.asList(0, 5, 3), Schema.createArray(Schema.create(Schema.Type.INT))}, // oggetto composto, schema compatibile
-      {deepMap, Schema.createMap(Schema.createArray(Schema.create(Schema.Type.DOUBLE)))},
+    return Arrays.asList(new Object[][]{
+      {null, Schema.create(Schema.Type.DOUBLE), null}, // oggetto nullo, schema NON compatibile. Deve funzionare lo stesso
+      {null, Schema.create(Schema.Type.NULL), null}, // oggetto nullo, schema compatibile.
+      {10, Schema.create(Schema.Type.FLOAT), 10}, // oggetto semplice, schema NON compatibile. Deve dare errore
+      {"String", Schema.create(Schema.Type.STRING), "String"}, // oggetto semplice, schema compatibile
+      // List(s) e Map(s) a quanto pare non sono oggetti profondi...
+      {Arrays.asList("0.e0", "5q.0", "3.0g"), Schema.createArray(Schema.create(Schema.Type.INT)), Arrays.asList("0.e0", "5q.0", "3.0g")}, // oggetti multipli semplici, schema NON compatibile. Nonostante ciò è possibile copiarlo.
+      {Arrays.asList(0, 5, 3), Schema.createArray(Schema.create(Schema.Type.INT)), Arrays.asList(0, 5, 3)}, // oggetti multipli semplici, schema compatibile
+      {deepMap, Schema.createMap(Schema.createArray(Schema.create(Schema.Type.DOUBLE))), deepMap},
+      {deepMap, Schema.createMap(Schema.createArray(Schema.create(Schema.Type.STRING))), deepMap},
+      // oggetto profondo, schema compatibile
+      {record, trialRecordSchema, recordCopy},
+      // oggetto profondo, schema NON compatibile
+      // {GenericData.get().newRecord(due, trialRecordSchema), Schema.createMap(Schema.createArray(Schema.create(Schema.Type.DOUBLE))), GenericData.get().newRecord(due, trialRecordSchema)}, // Questo test fallisce con cast exception
     });
   }
 
   @Test
   public void deepCopy() {
-    assertEquals(value, genericData.deepCopy(schema, value));
+    Object o = genericData.deepCopy(schema, value);
+    assertEquals(expectedCopy, o);
   }
 }

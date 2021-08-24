@@ -19,6 +19,7 @@ package org.apache.avro.generic;
 
 import org.apache.avro.AvroTypeException;
 import org.apache.avro.Schema;
+import org.apache.avro.testutil.TrialRecord;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -26,7 +27,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -72,28 +76,7 @@ public class TestInduce {
     Map<String, Integer> trialMap = new HashMap<>();
     trialMap.put("uno", 1);
     trialMap.put("due", 2);
-
-    // Implemento una semplice classe serializzabile per Avro
-    class TrialRecord implements IndexedRecord {
-      int first;
-      String second;
-
-      @Override
-      public Schema getSchema() {
-        return Schema.create(Schema.Type.STRING);
-      }
-
-      @Override
-      public void put(int i, Object v) {
-        this.first = i;
-        this.second = v.toString();
-      }
-
-      @Override
-      public Object get(int i) {
-        return this.second;
-      }
-    }
+    TrialRecord trialRecord = new TrialRecord(1, "uno");
 
     return Arrays.asList(new Object[][]{
       // null produce uno schema nullo
@@ -105,7 +88,7 @@ public class TestInduce {
       // oggetti che producono schemi con dati aggregati
       {Arrays.asList(4.6f, 6.5f, 3.2f, 0.0f), Schema.createArray(Schema.create(Schema.Type.FLOAT))}, // le liste devono contenere oggetti dello stesso tipo
       {trialMap, Schema.createMap(Schema.create(Schema.Type.INT))},
-      {new TrialRecord(), Schema.create(Schema.Type.STRING)},
+      {trialRecord, trialRecord.getSchema()},
       // oggetti non compatibili (es. gli array Java)
       {new int[]{2, 3}, null},
       {new BigDecimal("2.4"), null},

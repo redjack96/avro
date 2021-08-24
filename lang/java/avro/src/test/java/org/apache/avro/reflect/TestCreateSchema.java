@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -47,9 +48,9 @@ import static org.junit.Assert.assertEquals;
 public class TestCreateSchema {
   private static ReflectData reflectData;
 
-  private Class<?> type;
-  private Map<String, Schema> mapStringSchema;
-  private Schema expectedSchema;
+  private final Type type;
+  private final Map<String, Schema> mapStringSchema;
+  private final Schema expectedSchema;
 
   public TestCreateSchema(Class<?> type, Map<String, Schema> mapStringSchema, Schema expectedSchema) {
     this.type = type;
@@ -75,13 +76,17 @@ public class TestCreateSchema {
   private static Collection<Object[]> configure() {
     return Arrays.asList(new Object[][]{
       {Integer.class, null, Schema.create(Schema.Type.INT)},
-      // {null, initializeMap(Schema.Type.INT), Schema.create(Schema.Type.INT)},
+      // {null, initializeMap(Schema.Type.INT), Schema.create(Schema.Type.INT)}, // non funziona
       {Void.class, new HashMap<>(), Schema.create(Schema.Type.NULL)},
       {String.class, initializeMap(Schema.Type.STRING), Schema.create(Schema.Type.STRING)},
 
     });
   }
 
+  /**
+   * Il test verifica che il metodo createSchema() restituisca lo schema atteso dato
+   * il set corrente dei parametri di input.
+   */
   @Test
   public void createSchema() {
     assertEquals(this.expectedSchema, reflectData.createSchema(this.type, this.mapStringSchema));
