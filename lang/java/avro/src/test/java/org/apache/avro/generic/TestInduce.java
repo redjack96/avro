@@ -19,7 +19,7 @@ package org.apache.avro.generic;
 
 import org.apache.avro.AvroTypeException;
 import org.apache.avro.Schema;
-import org.apache.avro.testutil.TrialRecord;
+import org.apache.avro.testutil.ExampleRecord;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -76,7 +76,7 @@ public class TestInduce {
     Map<String, Integer> trialMap = new HashMap<>();
     trialMap.put("uno", 1);
     trialMap.put("due", 2);
-    TrialRecord trialRecord = new TrialRecord(1, "uno");
+    ExampleRecord exampleRecord = new ExampleRecord(1, "uno");
 
     return Arrays.asList(new Object[][]{
       // null produce uno schema nullo
@@ -88,7 +88,7 @@ public class TestInduce {
       // oggetti che producono schemi con dati aggregati
       {Arrays.asList(4.6f, 6.5f, 3.2f, 0.0f), Schema.createArray(Schema.create(Schema.Type.FLOAT))}, // le liste devono contenere oggetti dello stesso tipo
       {trialMap, Schema.createMap(Schema.create(Schema.Type.INT))},
-      {trialRecord, trialRecord.getSchema()},
+      {exampleRecord, exampleRecord.getSchema()},
       // oggetti non compatibili (es. gli array Java)
       {new int[]{2, 3}, null},
       {new BigDecimal("2.4"), null},

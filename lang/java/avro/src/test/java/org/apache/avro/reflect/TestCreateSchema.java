@@ -19,7 +19,7 @@ package org.apache.avro.reflect;
 
 import org.apache.avro.AvroRuntimeException;
 import org.apache.avro.Schema;
-import org.apache.avro.testutil.TrialRecord;
+import org.apache.avro.testutil.ExampleRecord;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -94,7 +94,7 @@ public class TestCreateSchema {
       {LinkedList.class, initializeNoSchemaMap(Schema.Type.NULL), new AvroRuntimeException("errore arrayList map pieno senza schema")},
       {String.class, initializeNoSchemaMap(Schema.Type.INT), Schema.create(Schema.Type.STRING)},
       // record
-      {TrialRecord.class, TrialRecord.getMap(), TrialRecord.getSchemaStatic()}
+      {ExampleRecord.class, ExampleRecord.getMap(), ExampleRecord.getSchemaStatic()}
     });
   }
 

@@ -18,7 +18,7 @@
 package org.apache.avro.generic;
 
 import org.apache.avro.Schema;
-import org.apache.avro.testutil.TrialRecord;
+import org.apache.avro.testutil.ExampleRecord;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -79,7 +79,7 @@ public class TestDeepCopy {
   }
 
   private static Collection<Object[]> configure(){
-    TrialRecord due = new TrialRecord(2, "due");
+    ExampleRecord due = new ExampleRecord(2, "due");
     Schema trialRecordSchema = due.getSchema();
     Object record = GenericData.get().newRecord(due, trialRecordSchema);
     Object recordCopy = GenericData.get().newRecord(due, trialRecordSchema);
