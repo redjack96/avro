@@ -19,20 +19,34 @@ package org.apache.avro.testutil;
 
 import org.apache.avro.Schema;
 import org.apache.avro.generic.IndexedRecord;
-
+import java.lang.reflect.Field;
 import java.util.*;
 
 /**
  * Implemento una semplice classe serializzabile come RECORD per Avro
  */
-public class ExampleRecord implements IndexedRecord {
+public class ExampleRecord implements IndexedRecord, FakeRecord {
   int first;
   String second;
+
+  public ExampleRecord(){
+    this.first = 1;
+    this.second = "2";
+  }
 
   public ExampleRecord(int first, String second) {
     this.first = first;
     this.second = second;
   }
+
+  public String getFieldName(int i){
+    return FakeRecord.getFieldNameStatic(i, this);
+  }
+
+  public static String getFieldNameStatic(int i){
+    return FakeRecord.getFieldNameStatic(i, new ExampleRecord(1, "2"));
+  }
+
 
   /**
    * @return Lo schema avro relativo all'intera istanza.
@@ -42,15 +56,34 @@ public class ExampleRecord implements IndexedRecord {
     return getSchemaStatic();
   }
 
+  /**
+   * Questo metodo aggiorna il valore del campo in posizione i
+   * @param i la posizione del campo
+   * @param v il valore da assegnare al campo
+   */
   @Override
   public void put(int i, Object v) {
-    this.first = i;
-    this.second = v.toString();
+    try {
+      Field field = this.getClass().getDeclaredFields()[i];
+      field.set(this, v);
+    }catch(Exception e){
+      e.printStackTrace();
+    }
   }
 
+  /**
+   * Questo metodo restituisce il valore del campo in posizione i
+   * @param i la posizione del campo
+   * @return il valore del campo.
+   */
   @Override
   public Object get(int i) {
-    return this.second;
+    try {
+      Field field = this.getClass().getDeclaredFields()[i];
+      return field.get(this);
+    } catch(Exception e){
+      return null;
+    }
   }
 
   /**
