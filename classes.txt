@@ -1,0 +1,2 @@
+org.apache.avro.reflect.GenericData
+org.apache.avro.reflect.ReflectData
