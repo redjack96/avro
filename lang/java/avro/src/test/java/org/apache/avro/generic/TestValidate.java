@@ -18,15 +18,20 @@
 package org.apache.avro.generic;
 
 import org.apache.avro.Schema;
+import org.apache.avro.testutil.ExampleRecord;
+import org.apache.avro.testutil.NotARecord;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
 
@@ -72,7 +77,13 @@ public class TestValidate {
     return configure();
   }
 
+  private enum MyEnum{Uno, Due, Tre} // Solo per i parametri
+
   private static Collection<Object[]> configure(){
+    Schema enumSchema = Schema.createEnum("MyEnum", "", "org.apache.avro.generic.TestValidate", Arrays.asList("Uno", "Due", "Tre"));
+    GenericData.EnumSymbol uno = new GenericData.EnumSymbol(enumSchema, MyEnum.Uno);
+    ByteBuffer bb = ByteBuffer.wrap(new byte[]{1,23,3,4});
+
     return Arrays.asList(new Object[][]{
       {Schema.create(Schema.Type.STRING), "Stringa", true},
       {Schema.create(Schema.Type.FLOAT), 4, false},
@@ -82,6 +93,16 @@ public class TestValidate {
       {Schema.createMap(Schema.create(Schema.Type.NULL)), Arrays.asList(null, null, null), false},
       {Schema.create(Schema.Type.NULL), null, true},
       {Schema.create(Schema.Type.NULL), new ArrayList<Void>(), false},
+      // Set di parametri aggiunti per incrementare coverage (statement e condition)
+      {ExampleRecord.getSchemaStatic(), new ExampleRecord(), true},
+      {ExampleRecord.getSchemaStatic(), new NotARecord(), false},
+      {Schema.createMap(Schema.create(Schema.Type.LONG)), new HashMap<String, Long>(), true},
+      {Schema.createArray(Schema.create(Schema.Type.INT)), new BigInteger("10"), false},
+      {Schema.create(Schema.Type.BOOLEAN), false, true},
+      {Schema.create(Schema.Type.BYTES), new byte[]{1,2,3}, false},
+      {Schema.create(Schema.Type.BYTES), bb, true},
+      {enumSchema, MyEnum.Uno, false},
+      {enumSchema, uno, true},
     });
   }
 
