@@ -76,7 +76,7 @@
 
   <profiles>
     <profile>
-      <id>pitest</id>
+      <id>pitest</id> <!-- Esegui con "mvn -P pitest clean verify -pl lang/java/avro"-->
       <!-- Aggiunto Pitest per il mutation testing -->
       <build>
         <plugins>
