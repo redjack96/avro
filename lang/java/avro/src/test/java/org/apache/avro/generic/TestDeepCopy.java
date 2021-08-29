@@ -17,6 +17,7 @@
  */
 package org.apache.avro.generic;
 
+import org.apache.avro.LogicalType;
 import org.apache.avro.Schema;
 import org.apache.avro.testutil.ExampleRecord;
 import org.junit.AfterClass;
@@ -24,10 +25,14 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -84,6 +89,11 @@ public class TestDeepCopy {
     Object record = GenericData.get().newRecord(due, trialRecordSchema);
     Object recordCopy = GenericData.get().newRecord(due, trialRecordSchema);
 
+    // LogicalType aggiunto per aumentare coverage.
+    LogicalType logicalMock = Mockito.mock(LogicalType.class);
+    Schema logicalMockSchema = due.getSchema();
+    logicalMock.addToSchema(logicalMockSchema);
+
     return Arrays.asList(new Object[][]{
       {null, Schema.create(Schema.Type.DOUBLE), null}, // oggetto nullo, schema NON compatibile. Deve funzionare lo stesso
       {null, Schema.create(Schema.Type.NULL), null}, // oggetto nullo, schema compatibile.
@@ -98,6 +108,9 @@ public class TestDeepCopy {
       {record, trialRecordSchema, recordCopy},
       // oggetto profondo, schema NON compatibile
       // {GenericData.get().newRecord(due, trialRecordSchema), Schema.createMap(Schema.createArray(Schema.create(Schema.Type.DOUBLE))), GenericData.get().newRecord(due, trialRecordSchema)}, // Questo test fallisce con cast exception
+
+      // Set di parametri aggiunti per incrementare coverage (statement e condition)
+      {record, logicalMockSchema, record},
     });
   }
 
