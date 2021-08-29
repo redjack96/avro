@@ -73,7 +73,7 @@ public class TestInduce {
     return configure();
   }
 
-  private static Collection<Object[]> configure(){
+  private static Collection<Object[]> configure() {
     Map<String, Integer> trialMap = new HashMap<>();
     trialMap.put("uno", 1);
     trialMap.put("due", 2);
@@ -81,7 +81,7 @@ public class TestInduce {
 
     // Inizializzazione variabili aggiuntive per migliorare le coverage CC e SC
     Schema fixedSchema = Schema.createFixed(null, null, null, 5);
-    GenericData.Fixed f = new GenericData.Fixed(fixedSchema, new byte[]{1,2,3,4,5});
+    GenericData.Fixed f = new GenericData.Fixed(fixedSchema, new byte[]{1, 2, 3, 4, 5});
 
     return Arrays.asList(new Object[][]{
       // null produce uno schema nullo
