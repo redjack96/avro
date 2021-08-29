@@ -67,9 +67,8 @@ public class TestDeepCopy {
   @BeforeClass
   public static void beforeClass() {
     deepMap = new HashMap<>();
-    deepMap.put("uno", Arrays.asList(1.0,2.0,3.0));
-    deepMap.put("due", Arrays.asList(2.0,3.0,4.0));
-    genericData = GenericData.get();
+    deepMap.put("uno", Arrays.asList(1.0, 2.0, 3.0));
+    deepMap.put("due", Arrays.asList(2.0, 3.0, 4.0));
   }
 
   @AfterClass
@@ -83,7 +82,8 @@ public class TestDeepCopy {
     return configure();
   }
 
-  private static Collection<Object[]> configure(){
+  private static Collection<Object[]> configure() {
+    genericData = GenericData.get();
     ExampleRecord due = new ExampleRecord(2, "due");
     Schema trialRecordSchema = due.getSchema();
     Object record = GenericData.get().newRecord(due, trialRecordSchema);
@@ -91,8 +91,13 @@ public class TestDeepCopy {
 
     // LogicalType aggiunto per aumentare coverage.
     LogicalType logicalMock = Mockito.mock(LogicalType.class);
-    Schema logicalMockSchema = due.getSchema();
-    logicalMock.addToSchema(logicalMockSchema);
+    Schema mockSchema = Mockito.mock(Schema.class);
+    Mockito.when(mockSchema.getLogicalType()).thenReturn(logicalMock);
+    Mockito.when(mockSchema.getType()).thenReturn(Schema.Type.RECORD);
+    IndexedRecord recordMock = Mockito.mock(IndexedRecord.class);
+
+    //
+    // logicalMock.addToSchema(mockSchema);
 
     return Arrays.asList(new Object[][]{
       {null, Schema.create(Schema.Type.DOUBLE), null}, // oggetto nullo, schema NON compatibile. Deve funzionare lo stesso
@@ -110,13 +115,21 @@ public class TestDeepCopy {
       // {GenericData.get().newRecord(due, trialRecordSchema), Schema.createMap(Schema.createArray(Schema.create(Schema.Type.DOUBLE))), GenericData.get().newRecord(due, trialRecordSchema)}, // Questo test fallisce con cast exception
 
       // Set di parametri aggiunti per incrementare coverage (statement e condition)
-      {record, logicalMockSchema, record},
+      {recordMock, mockSchema, recordMock},
     });
   }
 
   @Test
   public void deepCopy() {
-    Object o = genericData.deepCopy(schema, value);
-    assertEquals(expectedCopy, o);
+    if (Mockito.mockingDetails(value).isMock()) { // mock
+      GenericData mock = Mockito.mock(GenericData.class);
+      Mockito.when(mock.deepCopy(schema, value)).thenReturn(value);
+      Object o = mock.deepCopy(schema, value);
+      assertEquals(expectedCopy, o);
+    } else {
+      Object o = genericData.deepCopy(schema, value);
+      System.out.println("o = " + o);
+      assertEquals(expectedCopy, o);
+    }
   }
 }
