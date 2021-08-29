@@ -19,6 +19,7 @@ package org.apache.avro.generic;
 
 import org.apache.avro.Schema;
 import org.apache.avro.testutil.ExampleRecord;
+import org.apache.avro.testutil.MyEnum;
 import org.apache.avro.testutil.NotARecord;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -74,8 +75,6 @@ public class TestValidate {
   public static Collection<Object[]> getParameters() {
     return configure();
   }
-
-  private enum MyEnum{Uno, Due, Tre} // Solo per i parametri
 
   private static Collection<Object[]> configure(){
     // Inizializzazione variabili aggiuntive per migliorare la coverage (Condition e Statement)

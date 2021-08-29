@@ -27,6 +27,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.math.BigDecimal;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -78,6 +79,14 @@ public class TestInduce {
     trialMap.put("due", 2);
     ExampleRecord exampleRecord = new ExampleRecord(1, "uno");
 
+    // Inizializzazione variabili aggiuntive per migliorare le coverage CC e SC
+    Schema fixedSchema = Schema.createFixed(null, null, null, 5);
+    GenericData.Fixed f = new GenericData.Fixed(fixedSchema, new byte[]{1,2,3,4,5});
+
+    // Inizializzazione variabili aggiuntive per migliorare la mutation coverage
+    GenericData.Fixed fMut = new GenericData.Fixed(fixedSchema, new byte[]{1,2,3,4,5,6});
+
+
     return Arrays.asList(new Object[][]{
       // null produce uno schema nullo
       {null, Schema.create(Schema.Type.NULL)},
@@ -92,6 +101,14 @@ public class TestInduce {
       // oggetti non compatibili (es. gli array Java)
       {new int[]{2, 3}, null},
       {new BigDecimal("2.4"), null},
+
+      // Set di parametri aggiunti per incrementare coverage (statement e condition)
+      {false, Schema.create(Schema.Type.BOOLEAN)},
+      {5.0, Schema.create(Schema.Type.DOUBLE)},
+      {5L, Schema.create(Schema.Type.LONG)},
+      {ByteBuffer.wrap(new byte[]{1, 2, 3}), Schema.create(Schema.Type.BYTES)},
+      {new ExampleRecord(), ExampleRecord.getSchemaStatic()},
+      {f, fixedSchema},
     });
   }
 
