@@ -83,10 +83,6 @@ public class TestInduce {
     Schema fixedSchema = Schema.createFixed(null, null, null, 5);
     GenericData.Fixed f = new GenericData.Fixed(fixedSchema, new byte[]{1,2,3,4,5});
 
-    // Inizializzazione variabili aggiuntive per migliorare la mutation coverage
-    GenericData.Fixed fMut = new GenericData.Fixed(fixedSchema, new byte[]{1,2,3,4,5,6});
-
-
     return Arrays.asList(new Object[][]{
       // null produce uno schema nullo
       {null, Schema.create(Schema.Type.NULL)},
