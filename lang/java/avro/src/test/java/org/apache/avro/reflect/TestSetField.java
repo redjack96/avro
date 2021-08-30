@@ -81,8 +81,8 @@ public class TestSetField {
     return Arrays.asList(new Object[][]{
       // 0 Tutto non valido
       {null, null, -1, null, Exception.class},
-      // 1 record non valido, il resto valido per la istanza
-      {notARecord, notARecord.getFieldName(0), 0, "newName", Exception.class},
+      // 1 record non valido, il resto valido per la istanza. ATTENZIONE: corretto in fase di aumento della coverage
+      {notARecord, notARecord.getFieldName(0), 0, "newName", null}, // non causa alcuna eccezione.
       // 2 record valido, ma campo inesistente
       {new ExampleRecord(), "iDoNotExist", 0, "don't care", null},
       // 3 record valido, ma con campo vuoto
@@ -101,8 +101,6 @@ public class TestSetField {
       {new ExampleRecord(), ExampleRecord.getFieldNameStatic(sizeExampleRecord - 1), sizeExampleRecord - 1, null, null},
       // 10 position -1, il resto è esistente e compatibile.
       {new ExampleRecord(), ExampleRecord.getFieldNameStatic(0), - 1, 7, Exception.class},
-
-
     });
   }
 
@@ -117,13 +115,11 @@ public class TestSetField {
       // eseguo set field
       Object initialValue = getInitialValue();
       reflectData.setField(record, fieldName, fieldIndex, fieldValue);
-      // checkFieldValue(initialValue); // gestisce lui le sue eccezioni
+      checkFieldValue(initialValue); // gestisce lui le sue eccezioni
     } catch (Exception e) { // Un' eccezione causata da reflectData.setField
       // verifichiamo che l'eccezione lanciata sia uguale a quella attesa.
       assertSame("E' avvenuta un' eccezione non attesa: " + e.getClass().getSimpleName(), error, Exception.class);
     }
-
-
   }
 
   private Object getInitialValue() {

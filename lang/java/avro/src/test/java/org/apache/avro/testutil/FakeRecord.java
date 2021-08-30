@@ -22,7 +22,7 @@ public interface FakeRecord {
 
   static String getFieldNameStatic(int i, FakeRecord instance){
     try{
-      return instance.getClass().getFields()[i].getName();
+      return instance.getClass().getDeclaredFields()[i].getName();
     } catch(IndexOutOfBoundsException out){
       return "outOfBounds";
     }
