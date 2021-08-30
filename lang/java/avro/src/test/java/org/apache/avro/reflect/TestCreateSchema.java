@@ -17,6 +17,7 @@
  */
 package org.apache.avro.reflect;
 
+
 import org.apache.avro.AvroRuntimeException;
 import org.apache.avro.Schema;
 import org.apache.avro.testutil.ExampleRecord;
@@ -26,11 +27,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.*;
 
+import static org.apache.avro.Schema.Type.INT;
 import static org.apache.avro.specific.SpecificData.CLASS_PROP;
+import static org.apache.avro.specific.SpecificData.KEY_CLASS_PROP;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
@@ -54,7 +60,7 @@ public class TestCreateSchema {
   private final Map<String, Schema> mapStringSchema;
   private final Object expectedSchemaOrThrow;
 
-  public TestCreateSchema(Class<?> type, Map<String, Schema> mapStringSchema, Object expectedSchemaOrThrow) {
+  public TestCreateSchema(Type type, Map<String, Schema> mapStringSchema, Object expectedSchemaOrThrow) {
     this.type = type;
     this.mapStringSchema = mapStringSchema;
     this.expectedSchemaOrThrow = expectedSchemaOrThrow;
@@ -119,7 +125,18 @@ public class TestCreateSchema {
       // i seguenti metodi sfruttano dei metodi con un valore di ritorno annotato con @AvroSchema
       {getAnnotatedList().getClass(), null, new AvroRuntimeException("Avro")},
       {getAnnotatedBytes().getClass(), null, Schema.create(Schema.Type.BYTES)},
+      {getAnnotatedCharSequence().getClass(), null, Schema.create(Schema.Type.STRING)},
       {getAnnotatedRecord().getClass(), ExampleRecord.getMap(), ExampleRecord.getSchemaStatic()},
+
+      // set di parametri per incrementare mutation coverage
+      {getByteGenericArrayTypePair().getLeft(), getByteGenericArrayTypePair().getRight(), Schema.create(Schema.Type.BYTES)},
+      {getTypeGenericArrayTypePair(Integer.TYPE, Schema.Type.INT).getLeft(), getTypeGenericArrayTypePair(Integer.TYPE, Schema.Type.INT).getRight(), Schema.createArray(Schema.create(Schema.Type.INT))},
+      {getParameterizedTypeListPair(String.class).getLeft(), getParameterizedTypeListPair().getRight(), getParameterizedTypeListPair().getRight().get("pippo")},
+      {getParameterizedTypeListPair(String.class, String.class).getLeft(), new HashMap<>(), new AvroRuntimeException("avro")}, // una lista non può avere 2 type parameters
+      {getParameterizedTypeStringMapPair(String.class, Integer.class).getLeft(), getParameterizedTypeStringMapPair(String.class, Integer.class).getRight(), Schema.createMap(Schema.create(INT))}, // string
+      {getParameterizedTypeUriMapPair().getLeft(), getParameterizedTypeUriMapPair().getRight(), getParameterizedTypeUriMapPair().getRight().get("pippo")}, // stringable
+      {getParameterizedTypeNonStringableMapPair().getLeft(), getParameterizedTypeNonStringableMapPair().getRight(), getParameterizedTypeNonStringableMapPair().getRight().get("pippo")}, // non-stringable
+
     });
   }
 
@@ -148,22 +165,24 @@ public class TestCreateSchema {
     return map;
   }
 
+
   // I metodi seguenti sono stati aggiunti per incrementare le coverage
 
-  private static Schema getIntSchemaWithProp(Class<?> clazz){
-    Schema schema = Schema.create(Schema.Type.INT);
+  private static Schema getIntSchemaWithProp(Class<?> clazz) {
+    Schema schema = Schema.create(INT);
     schema.addProp(CLASS_PROP, clazz.getName());
     return schema;
   }
-  private static Schema byteArraySchemaWithProp(){
-    Schema schema = Schema.create(Schema.Type.INT);
+  private static Schema byteArraySchemaWithProp() {
+    Schema schema = Schema.create(INT);
     Schema arraySchema = Schema.createArray(schema);
     schema.addProp(CLASS_PROP, Byte.class.getName());
     arraySchema.addProp(CLASS_PROP, Byte[].class.getName());
     return arraySchema;
   }
 
-  private static @AvroSchema(value = "list") List<Integer> getAnnotatedList(){
+  private static @AvroSchema(value = "list")
+  List<Integer> getAnnotatedList() {
     List<Integer> nullableList = new ArrayList<>();
     nullableList.add(1);
     nullableList.add(null);
@@ -171,15 +190,160 @@ public class TestCreateSchema {
     return nullableList;
   }
 
-  private static @AvroSchema(value = "bytebuffer") ByteBuffer getAnnotatedBytes(){
+  private static @AvroSchema(value = "bytebuffer")
+  ByteBuffer getAnnotatedBytes() {
     return ByteBuffer.allocate(10);
   }
 
-  private static @AvroSchema(value = "string") String getAnnotatedCharSequence(){
+  private static @AvroSchema(value = "string")
+  String getAnnotatedCharSequence() {
     return "Ciao";
   }
 
-  private static @AvroSchema(value = "record") ExampleRecord getAnnotatedRecord(){
+  private static @AvroSchema(value = "record")
+  ExampleRecord getAnnotatedRecord() {
     return new ExampleRecord();
   }
+
+
+  // metodi aggiunti per aumentare mutation coverage
+  private static Pair<GenericArrayType, Map<String, Schema>> getByteGenericArrayTypePair() {
+    GenericArrayType g = () -> Byte.TYPE;
+    Map<String, Schema> map = new HashMap<>();
+    map.put("pippo", Schema.create(Schema.Type.BYTES));
+    return Pair.of(g, map);
+  }
+
+  private static Pair<GenericArrayType, Map<String, Schema>> getTypeGenericArrayTypePair(Type type, Schema.Type schematype) {
+    GenericArrayType g = () -> type;
+    Map<String, Schema> map = new HashMap<>();
+    map.put("pippo", Schema.create(schematype));
+    return Pair.of(g, map);
+  }
+
+  private static Pair<ParameterizedType, Map<String, Schema>> getParameterizedTypeListPair(Type... types){
+    ParameterizedType p = new ParameterizedType() {
+      @Override
+      public Type[] getActualTypeArguments() {
+        return types;
+      }
+
+      @Override
+      public Type getRawType() {
+        return List.class;
+      }
+
+      @Override
+      public Type getOwnerType() {
+        return null;
+      }
+    };
+    Schema arraySchema = Schema.createArray(Schema.create(Schema.Type.STRING));
+    arraySchema.addProp(CLASS_PROP, "java.util.List");
+    Map<String, Schema> map = new HashMap<>();
+    map.put("pippo", arraySchema);
+
+    return Pair.of(p, map);
+  }
+
+  private static Pair<ParameterizedType, Map<String, Schema>> getParameterizedTypeStringMapPair(Type... types){
+    ParameterizedType p = new ParameterizedType() {
+      @Override
+      public Type[] getActualTypeArguments() {
+        return types;
+      }
+
+      @Override
+      public Type getRawType() {
+        return Map.class;
+      }
+
+      @Override
+      public Type getOwnerType() {
+        return null;
+      }
+    };
+    Schema mapSchema = Schema.createMap(Schema.create(Schema.Type.INT));
+    mapSchema.addProp(CLASS_PROP, "java.util.Map");
+    Map<String, Schema> map = new HashMap<>();
+    map.put("pippo", mapSchema);
+
+    return Pair.of(p, map);
+  }
+
+  private static Pair<ParameterizedType, Map<String, Schema>> getParameterizedTypeUriMapPair(){
+    ParameterizedType p = new ParameterizedType() {
+      @Override
+      public Type[] getActualTypeArguments() {
+        return new Type[]{URI.class, Integer.class};
+      }
+
+      @Override
+      public Type getRawType() {
+        return Map.class;
+      }
+
+      @Override
+      public Type getOwnerType() {
+        return null;
+      }
+    };
+    Schema mapSchema = Schema.createMap(Schema.create(Schema.Type.INT));
+    mapSchema.addProp(KEY_CLASS_PROP, "java.net.URI");
+    Map<String, Schema> map = new HashMap<>();
+    map.put("pippo", mapSchema);
+
+    return Pair.of(p, map);
+  }
+
+  private static Pair<ParameterizedType, Map<String, Schema>> getParameterizedTypeNonStringableMapPair() {
+    ParameterizedType p = new ParameterizedType() {
+      @Override
+      public Type[] getActualTypeArguments() {
+        return new Type[]{Integer.class, Integer.class};
+      }
+
+      @Override
+      public Type getRawType() {
+        return Map.class;
+      }
+
+      @Override
+      public Type getOwnerType() {
+        return null;
+      }
+    };
+    Schema mapSchema = ReflectData.get().createNonStringMapSchema(Integer.class, Integer.class, null);
+    mapSchema.addProp(CLASS_PROP, "java.util.Map"); // Nome compreso il package
+    Map<String, Schema> map = new HashMap<>();
+    map.put("pippo", mapSchema);
+
+    return Pair.of(p, map);
+  }
+
+  private static class Pair<L, R> {
+
+    private L left;
+    private R right;
+
+    private Pair() {
+    }
+
+    public static <L, R> Pair<L, R> of(L left, R right) {
+      Pair<L, R> p = new Pair<>();
+      p.left = left;
+      p.right = right;
+      return p;
+    }
+
+
+    public L getLeft() {
+      return left;
+    }
+
+    public R getRight() {
+      return right;
+    }
+  }
+
 }
