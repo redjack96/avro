@@ -86,6 +86,14 @@ public class ExampleRecord implements IndexedRecord, FakeRecord {
     }
   }
 
+  @Override
+  public String toString() {
+    return "ExampleRecord{" +
+      "first=" + first +
+      ", second='" + second + '\'' +
+      '}';
+  }
+
   /**
    * Metodo equals, per poter fare il confronto tra due oggetti TrialRecord
    * all'interno del metodo assertEqual().

@@ -17,6 +17,7 @@
  */
 package org.apache.avro.generic;
 
+import org.apache.avro.Conversion;
 import org.apache.avro.LogicalType;
 import org.apache.avro.Schema;
 import org.apache.avro.testutil.ExampleRecord;
@@ -35,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 
 /**
  * Test parametrico del metodo GenericData::deepCopy(). Il test riceve due parametri,
@@ -85,19 +87,13 @@ public class TestDeepCopy {
   private static Collection<Object[]> configure() {
     genericData = GenericData.get();
     ExampleRecord due = new ExampleRecord(2, "due");
-    Schema trialRecordSchema = due.getSchema();
-    Object record = GenericData.get().newRecord(due, trialRecordSchema);
-    Object recordCopy = GenericData.get().newRecord(due, trialRecordSchema);
+    Schema exampleRecordSchema = due.getSchema();
+    Object record = GenericData.get().newRecord(due, exampleRecordSchema);
+    Object recordCopy = GenericData.get().newRecord(due, exampleRecordSchema);
 
     // LogicalType aggiunto per aumentare coverage.
-    LogicalType logicalMock = Mockito.mock(LogicalType.class);
-    Schema mockSchema = Mockito.mock(Schema.class);
-    Mockito.when(mockSchema.getLogicalType()).thenReturn(logicalMock);
-    Mockito.when(mockSchema.getType()).thenReturn(Schema.Type.RECORD);
-    IndexedRecord recordMock = Mockito.mock(IndexedRecord.class);
-
-    //
-    // logicalMock.addToSchema(mockSchema);
+    LogicalType l = new LogicalType("pippo");
+    l.addToSchema(exampleRecordSchema);
 
     return Arrays.asList(new Object[][]{
       {null, Schema.create(Schema.Type.DOUBLE), null}, // oggetto nullo, schema NON compatibile. Deve funzionare lo stesso
@@ -110,25 +106,30 @@ public class TestDeepCopy {
       {deepMap, Schema.createMap(Schema.createArray(Schema.create(Schema.Type.DOUBLE))), deepMap},
       {deepMap, Schema.createMap(Schema.createArray(Schema.create(Schema.Type.STRING))), deepMap},
       // oggetto profondo, schema compatibile
-      {record, trialRecordSchema, recordCopy},
+      {record, exampleRecordSchema, recordCopy},
       // oggetto profondo, schema NON compatibile
-      // {GenericData.get().newRecord(due, trialRecordSchema), Schema.createMap(Schema.createArray(Schema.create(Schema.Type.DOUBLE))), GenericData.get().newRecord(due, trialRecordSchema)}, // Questo test fallisce con cast exception
+      // {GenericData.get().newRecord(due, exampleRecordSchema), Schema.createMap(Schema.createArray(Schema.create(Schema.Type.DOUBLE))), GenericData.get().newRecord(due, exampleRecordSchema)}, // Questo test fallisce con cast exception
 
       // Set di parametri aggiunti per incrementare coverage (statement e condition)
-      {recordMock, mockSchema, recordMock},
+      {due, exampleRecordSchema, due},
     });
   }
 
+  // Per far funzionare il debug: mvn -Dmaven.surefire.debug test.
+  // Poi esegui una Remote JVM Debug con la stessa porta
   @Test
   public void deepCopy() {
-    if (Mockito.mockingDetails(value).isMock()) { // mock
-      GenericData mock = Mockito.mock(GenericData.class);
-      Mockito.when(mock.deepCopy(schema, value)).thenReturn(value);
-      Object o = mock.deepCopy(schema, value);
-      assertEquals(expectedCopy, o);
-    } else {
+    if (schema.getLogicalType()!=null) { // mock aggiunta per incrementare la coverage
+      Conversion mock = Mockito.mock(Conversion.class);
+      Mockito.when(mock.getConvertedType()).thenAnswer(a -> ExampleRecord.class);
+      Mockito.when(mock.getLogicalTypeName()).thenReturn("pippo");
+      Mockito.when(mock.toRecord(value, schema, schema.getLogicalType())).thenReturn((IndexedRecord) value);
+      Mockito.when(mock.fromRecord(any(), any(), any())).thenReturn(value);
+      genericData.addLogicalTypeConversion(mock);
       Object o = genericData.deepCopy(schema, value);
-      System.out.println("o = " + o);
+      assertEquals(expectedCopy, o);
+    } else { // test iniziale
+      Object o = genericData.deepCopy(schema, value);
       assertEquals(expectedCopy, o);
     }
   }
