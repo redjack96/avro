@@ -27,8 +27,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.lang.reflect.Type;
+import java.nio.ByteBuffer;
 import java.util.*;
 
+import static org.apache.avro.specific.SpecificData.CLASS_PROP;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
@@ -74,6 +76,10 @@ public class TestCreateSchema {
   }
 
   private static Collection<Object[]> configure() {
+    // variabili aggiunte in un secondo tempo per incrementare coverage
+    Schema arraySchemaWithProp = Schema.createArray(ExampleRecord.getSchemaStatic());
+    arraySchemaWithProp.addProp(CLASS_PROP, ExampleRecord[].class.getName());
+
     return Arrays.asList(new Object[][]{
       // tipo compatibile con schema, map nullo
       {Integer.class, null, Schema.create(Schema.Type.INT)},
@@ -94,7 +100,26 @@ public class TestCreateSchema {
       {LinkedList.class, initializeNoSchemaMap(Schema.Type.NULL), new AvroRuntimeException("errore arrayList map pieno senza schema")},
       {String.class, initializeNoSchemaMap(Schema.Type.INT), Schema.create(Schema.Type.STRING)},
       // record
-      {ExampleRecord.class, ExampleRecord.getMap(), ExampleRecord.getSchemaStatic()}
+      {ExampleRecord.class, ExampleRecord.getMap(), ExampleRecord.getSchemaStatic()},
+
+      // set di parametri per incrementare coverage
+      {Byte.TYPE, null, getIntSchemaWithProp(Byte.class)},
+      {Short.TYPE, null, getIntSchemaWithProp(Short.class)},
+      {Character.TYPE, null, getIntSchemaWithProp(Character.class)},
+      {Byte.class, null, getIntSchemaWithProp(Byte.class)},
+      {Short.class, null, getIntSchemaWithProp(Short.class)},
+      {Character.class, null, getIntSchemaWithProp(Character.class)},
+      {Void.class, null, Schema.create(Schema.Type.NULL)},
+      {Float.class, null, Schema.create(Schema.Type.FLOAT)},
+      {Double.class, null, Schema.create(Schema.Type.DOUBLE)},
+      {Boolean.class, null, Schema.create(Schema.Type.BOOLEAN)},
+      {Long.class, null, Schema.create(Schema.Type.LONG)},
+      {Byte[].class, null, byteArraySchemaWithProp()},
+      {ExampleRecord[].class, ExampleRecord.getMap(), arraySchemaWithProp},
+      // i seguenti metodi sfruttano dei metodi con un valore di ritorno annotato con @AvroSchema
+      {getAnnotatedList().getClass(), null, new AvroRuntimeException("Avro")},
+      {getAnnotatedBytes().getClass(), null, Schema.create(Schema.Type.BYTES)},
+      {getAnnotatedRecord().getClass(), ExampleRecord.getMap(), ExampleRecord.getSchemaStatic()},
     });
   }
 
@@ -121,5 +146,40 @@ public class TestCreateSchema {
     Map<String, Schema> map = new HashMap<>();
     map.put("Schema-" + type.getName(), null);
     return map;
+  }
+
+  // I metodi seguenti sono stati aggiunti per incrementare le coverage
+
+  private static Schema getIntSchemaWithProp(Class<?> clazz){
+    Schema schema = Schema.create(Schema.Type.INT);
+    schema.addProp(CLASS_PROP, clazz.getName());
+    return schema;
+  }
+  private static Schema byteArraySchemaWithProp(){
+    Schema schema = Schema.create(Schema.Type.INT);
+    Schema arraySchema = Schema.createArray(schema);
+    schema.addProp(CLASS_PROP, Byte.class.getName());
+    arraySchema.addProp(CLASS_PROP, Byte[].class.getName());
+    return arraySchema;
+  }
+
+  private static @AvroSchema(value = "list") List<Integer> getAnnotatedList(){
+    List<Integer> nullableList = new ArrayList<>();
+    nullableList.add(1);
+    nullableList.add(null);
+    nullableList.add(3);
+    return nullableList;
+  }
+
+  private static @AvroSchema(value = "bytebuffer") ByteBuffer getAnnotatedBytes(){
+    return ByteBuffer.allocate(10);
+  }
+
+  private static @AvroSchema(value = "string") String getAnnotatedCharSequence(){
+    return "Ciao";
+  }
+
+  private static @AvroSchema(value = "record") ExampleRecord getAnnotatedRecord(){
+    return new ExampleRecord();
   }
 }

@@ -110,7 +110,7 @@ public class TestDeepCopy {
       // oggetto profondo, schema NON compatibile
       // {GenericData.get().newRecord(due, exampleRecordSchema), Schema.createMap(Schema.createArray(Schema.create(Schema.Type.DOUBLE))), GenericData.get().newRecord(due, exampleRecordSchema)}, // Questo test fallisce con cast exception
 
-      // Set di parametri aggiunti per incrementare coverage (statement e condition)
+      // Set di parametri aggiunti per incrementare coverage (statement e condition + mutation)
       {due, exampleRecordSchema, due},
     });
   }
